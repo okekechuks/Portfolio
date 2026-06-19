@@ -1,28 +1,21 @@
 import { create } from "zustand";
 import { authService } from "@/services/authService";
-import type { UserSession } from "@/types";
 
 interface SessionState {
-  session: UserSession | null;
-  refreshSession: () => void;
+  isAuthenticated: boolean;
+  refreshSession: () => Promise<void>;
   clearSession: () => void;
 }
 
 export const useSessionStore = create<SessionState>((set) => ({
-  session: null,
+  isAuthenticated: false,
 
-  refreshSession: () => {
-    const session = authService.getSession();
-    set({ session });
+  refreshSession: async () => {
+    const authed = await authService.checkSession();
+    set({ isAuthenticated: authed });
   },
 
   clearSession: () => {
-    set({
-      session: {
-        isAuthenticated: false,
-        token: null,
-        expiresAt: null,
-      },
-    });
+    set({ isAuthenticated: false });
   },
 }));

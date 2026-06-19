@@ -5,8 +5,9 @@ import type { AuthResponse } from "@/types";
 interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
+  isInitialized: boolean;
   error: string | null;
-  initialize: () => void;
+  initialize: () => Promise<void>;
   login: (password: string) => Promise<AuthResponse>;
   logout: () => Promise<void>;
   clearError: () => void;
@@ -15,11 +16,12 @@ interface AuthState {
 export const useAuthStore = create<AuthState>((set) => ({
   isAuthenticated: false,
   isLoading: false,
+  isInitialized: false,
   error: null,
 
-  initialize: () => {
-    const session = authService.getSession();
-    set({ isAuthenticated: session.isAuthenticated });
+  initialize: async () => {
+    const authed = await authService.checkSession();
+    set({ isAuthenticated: authed, isInitialized: true });
   },
 
   login: async (password: string) => {

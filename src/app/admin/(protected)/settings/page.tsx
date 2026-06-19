@@ -27,7 +27,7 @@ export default function SettingsAdminPage() {
   const { setDarkMode, setAccentColor } = useThemeStore();
 
   useEffect(() => {
-    settingsService.getSettings().then(setSettings);
+    settingsService.getSettings({ admin: true }).then(setSettings);
   }, []);
 
   const update = (updates: Partial<SiteSettings>) => {

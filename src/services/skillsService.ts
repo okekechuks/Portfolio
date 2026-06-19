@@ -1,17 +1,19 @@
-import { getDefaultSkills } from "@/data/defaults";
-import { getFromStorage, setInStorage } from "@/lib/storage";
+import { apiFetch } from "@/lib/api/client";
+import { isRemoteStorageEnabled } from "@/lib/config";
+import { localGetSkills, localSetSkills } from "@/lib/db/localFallback";
 import type { Skill } from "@/types";
-
-const STORAGE_KEY = "portfolio_skills" as const;
 
 export const skillsService = {
   async getAll(): Promise<Skill[]> {
-    return getFromStorage<Skill[]>(STORAGE_KEY, getDefaultSkills());
+    if (!isRemoteStorageEnabled()) return localGetSkills();
+    return apiFetch<Skill[]>("/api/skills?all=true", { auth: true });
   },
 
   async getEnabled(): Promise<Skill[]> {
-    const skills = await this.getAll();
-    return skills.filter((skill) => skill.enabled);
+    if (!isRemoteStorageEnabled()) {
+      return localGetSkills().filter((s) => s.enabled);
+    }
+    return apiFetch<Skill[]>("/api/skills");
   },
 
   async getByCategory(category: string): Promise<Skill[]> {
@@ -20,19 +22,36 @@ export const skillsService = {
   },
 
   async updateSkill(id: string, updates: Partial<Skill>): Promise<Skill | null> {
-    const skills = await this.getAll();
-    const index = skills.findIndex((s) => s.id === id);
+    if (!isRemoteStorageEnabled()) {
+      const skills = localGetSkills();
+      const index = skills.findIndex((s) => s.id === id);
+      if (index === -1) return null;
+      skills[index] = { ...skills[index], ...updates };
+      localSetSkills(skills);
+      return skills[index];
+    }
 
-    if (index === -1) return null;
-
-    skills[index] = { ...skills[index], ...updates };
-    setInStorage(STORAGE_KEY, skills);
-    return skills[index];
+    try {
+      return await apiFetch<Skill>(`/api/skills/${id}`, {
+        method: "PATCH",
+        body: updates,
+        auth: true,
+      });
+    } catch {
+      return null;
+    }
   },
 
   async updateSkills(updatedSkills: Skill[]): Promise<Skill[]> {
-    setInStorage(STORAGE_KEY, updatedSkills);
-    return updatedSkills;
+    if (!isRemoteStorageEnabled()) {
+      localSetSkills(updatedSkills);
+      return updatedSkills;
+    }
+    return apiFetch<Skill[]>("/api/skills", {
+      method: "PUT",
+      body: updatedSkills,
+      auth: true,
+    });
   },
 
   async toggleEnabled(id: string): Promise<Skill | null> {

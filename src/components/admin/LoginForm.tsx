@@ -41,7 +41,7 @@ export function LoginForm() {
           label="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          placeholder="08029315311"
+          placeholder="password"
           required
           error={error ?? undefined}
         />

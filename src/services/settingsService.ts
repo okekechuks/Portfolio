@@ -1,34 +1,44 @@
+import { apiFetch } from "@/lib/api/client";
+import { isRemoteStorageEnabled } from "@/lib/config";
 import { defaultSettings } from "@/data/defaults";
-import { getFromStorage, setInStorage } from "@/lib/storage";
+import { localGetSettings, localSetSettings } from "@/lib/db/localFallback";
 import type { SiteSettings } from "@/types";
 
-const STORAGE_KEY = "portfolio_settings" as const;
-
 export const settingsService = {
-  async getSettings(): Promise<SiteSettings> {
-    const settings = getFromStorage<SiteSettings>(STORAGE_KEY, defaultSettings);
-
-    if (settings.adminPassword === "admin123") {
-      const migrated = {
-        ...settings,
-        adminPassword: defaultSettings.adminPassword,
-      };
-      setInStorage(STORAGE_KEY, migrated);
-      return migrated;
+  async getSettings(options?: { admin?: boolean }): Promise<SiteSettings> {
+    if (!isRemoteStorageEnabled()) {
+      return localGetSettings();
     }
 
-    return settings;
+    const admin = options?.admin ?? false;
+    const query = admin ? "?admin=true" : "";
+    const settings = await apiFetch<
+      Omit<SiteSettings, "adminPassword"> & Partial<Pick<SiteSettings, "adminPassword">>
+    >(`/api/settings${query}`, admin ? { auth: true } : {});
+
+    return {
+      ...defaultSettings,
+      ...settings,
+      adminPassword: settings.adminPassword ?? defaultSettings.adminPassword,
+    };
   },
 
   async updateSettings(updates: Partial<SiteSettings>): Promise<SiteSettings> {
-    const current = await this.getSettings();
-    const updated = { ...current, ...updates };
-    setInStorage(STORAGE_KEY, updated);
-    return updated;
+    if (!isRemoteStorageEnabled()) {
+      const current = localGetSettings();
+      const updated = { ...current, ...updates };
+      localSetSettings(updated);
+      return updated;
+    }
+
+    return apiFetch<SiteSettings>("/api/settings", {
+      method: "PATCH",
+      body: updates,
+      auth: true,
+    });
   },
 
   async resetSettings(): Promise<SiteSettings> {
-    setInStorage(STORAGE_KEY, defaultSettings);
-    return defaultSettings;
+    return this.updateSettings(defaultSettings);
   },
 };

@@ -1,32 +1,40 @@
-import { defaultSocials } from "@/data/defaults";
-import { getFromStorage, setInStorage } from "@/lib/storage";
+import { apiFetch } from "@/lib/api/client";
+import { isRemoteStorageEnabled } from "@/lib/config";
+import { localGetSocials, localSetSocials } from "@/lib/db/localFallback";
 import type { SocialLink } from "@/types";
-
-const STORAGE_KEY = "portfolio_socials" as const;
 
 export const socialsService = {
   async getAll(): Promise<SocialLink[]> {
-    return getFromStorage<SocialLink[]>(STORAGE_KEY, defaultSocials);
+    if (!isRemoteStorageEnabled()) return localGetSocials();
+    return apiFetch<SocialLink[]>("/api/socials?all=true", { auth: true });
   },
 
   async getEnabled(): Promise<SocialLink[]> {
-    const socials = await this.getAll();
-    return socials.filter((s) => s.enabled);
+    if (!isRemoteStorageEnabled()) {
+      return localGetSocials().filter((s) => s.enabled);
+    }
+    return apiFetch<SocialLink[]>("/api/socials");
   },
 
   async update(id: string, updates: Partial<SocialLink>): Promise<SocialLink | null> {
     const socials = await this.getAll();
     const index = socials.findIndex((s) => s.id === id);
     if (index === -1) return null;
-
     socials[index] = { ...socials[index], ...updates };
-    setInStorage(STORAGE_KEY, socials);
-    return socials[index];
+    const updated = await this.updateAll(socials);
+    return updated.find((s) => s.id === id) ?? null;
   },
 
   async updateAll(updatedSocials: SocialLink[]): Promise<SocialLink[]> {
-    setInStorage(STORAGE_KEY, updatedSocials);
-    return updatedSocials;
+    if (!isRemoteStorageEnabled()) {
+      localSetSocials(updatedSocials);
+      return updatedSocials;
+    }
+    return apiFetch<SocialLink[]>("/api/socials", {
+      method: "PUT",
+      body: updatedSocials,
+      auth: true,
+    });
   },
 
   async toggleEnabled(id: string): Promise<SocialLink | null> {

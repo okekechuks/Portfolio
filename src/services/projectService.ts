@@ -1,19 +1,22 @@
-import { defaultProjects } from "@/data/defaults";
-import { getFromStorage, setInStorage } from "@/lib/storage";
-import type { Project } from "@/types";
+import { apiFetch } from "@/lib/api/client";
+import { isRemoteStorageEnabled } from "@/lib/config";
+import { localGetProjects, localSetProjects } from "@/lib/db/localFallback";
 import { generateId } from "@/utils/generateId";
-
-const STORAGE_KEY = "portfolio_projects" as const;
+import type { Project } from "@/types";
 
 export const projectService = {
   async getAll(): Promise<Project[]> {
-    const projects = getFromStorage<Project[]>(STORAGE_KEY, defaultProjects);
-    return [...projects].sort((a, b) => a.order - b.order);
+    if (!isRemoteStorageEnabled()) {
+      return [...localGetProjects()].sort((a, b) => a.order - b.order);
+    }
+    return apiFetch<Project[]>("/api/projects?all=true", { auth: true });
   },
 
   async getEnabled(): Promise<Project[]> {
-    const projects = await this.getAll();
-    return projects.filter((p) => p.enabled);
+    if (!isRemoteStorageEnabled()) {
+      return localGetProjects().filter((p) => p.enabled).sort((a, b) => a.order - b.order);
+    }
+    return apiFetch<Project[]>("/api/projects");
   },
 
   async getFeatured(): Promise<Project[]> {
@@ -27,29 +30,56 @@ export const projectService = {
   },
 
   async create(data: Omit<Project, "id">): Promise<Project> {
-    const projects = await this.getAll();
-    const project: Project = { ...data, id: generateId("proj") };
-    projects.push(project);
-    setInStorage(STORAGE_KEY, projects);
-    return project;
+    if (!isRemoteStorageEnabled()) {
+      const projects = localGetProjects();
+      const project: Project = { ...data, id: generateId("proj") };
+      projects.push(project);
+      localSetProjects(projects);
+      return project;
+    }
+    return apiFetch<Project>("/api/projects", {
+      method: "POST",
+      body: data,
+      auth: true,
+    });
   },
 
   async update(id: string, updates: Partial<Project>): Promise<Project | null> {
-    const projects = await this.getAll();
-    const index = projects.findIndex((p) => p.id === id);
-    if (index === -1) return null;
+    if (!isRemoteStorageEnabled()) {
+      const projects = localGetProjects();
+      const index = projects.findIndex((p) => p.id === id);
+      if (index === -1) return null;
+      projects[index] = { ...projects[index], ...updates };
+      localSetProjects(projects);
+      return projects[index];
+    }
 
-    projects[index] = { ...projects[index], ...updates };
-    setInStorage(STORAGE_KEY, projects);
-    return projects[index];
+    try {
+      return await apiFetch<Project>(`/api/projects/${id}`, {
+        method: "PATCH",
+        body: updates,
+        auth: true,
+      });
+    } catch {
+      return null;
+    }
   },
 
   async delete(id: string): Promise<boolean> {
-    const projects = await this.getAll();
-    const filtered = projects.filter((p) => p.id !== id);
-    if (filtered.length === projects.length) return false;
-    setInStorage(STORAGE_KEY, filtered);
-    return true;
+    if (!isRemoteStorageEnabled()) {
+      const projects = localGetProjects();
+      const filtered = projects.filter((p) => p.id !== id);
+      if (filtered.length === projects.length) return false;
+      localSetProjects(filtered);
+      return true;
+    }
+
+    try {
+      await apiFetch(`/api/projects/${id}`, { method: "DELETE", auth: true });
+      return true;
+    } catch {
+      return false;
+    }
   },
 
   async toggleEnabled(id: string): Promise<Project | null> {
