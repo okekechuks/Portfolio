@@ -42,8 +42,20 @@ export default function SkillsAdminPage() {
   }, []);
 
   const updateSkill = async (id: string, updates: Partial<Skill>) => {
-    await skillsService.updateSkill(id, updates);
-    await loadSkills();
+    let nextSkills: Skill[] = [];
+
+    setSkills((currentSkills) => {
+      nextSkills = currentSkills.map((skill) =>
+        skill.id === id ? { ...skill, ...updates } : skill
+      );
+      return nextSkills;
+    });
+
+    const savedSkill = await skillsService.updateSkill(id, updates);
+
+    if (!savedSkill) {
+      await loadSkills();
+    }
   };
 
   const grouped = CATEGORIES.map((category) => ({
