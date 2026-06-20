@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { motion } from "framer-motion";
 import { ExternalLink, Code2 } from "lucide-react";
 import type { Project } from "@/types";
@@ -17,11 +16,10 @@ export function ProjectCard({ project }: ProjectCardProps) {
     <motion.div initial="rest" whileHover="hover" variants={cardHover}>
       <Card hover className="h-full flex flex-col overflow-hidden p-0">
         <div className="relative h-48 w-full overflow-hidden bg-muted-bg">
-          <Image
+          <img
             src={project.image || "/images/project-placeholder.svg"}
             alt={project.title}
-            fill
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
           {project.featured && (
             <span className="absolute top-3 right-3 rounded-lg bg-[var(--accent)] px-2 py-1 text-xs font-semibold text-white">

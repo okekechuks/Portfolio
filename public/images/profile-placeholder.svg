@@ -1,6 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400" fill="none">
-  <rect width="400" height="400" fill="#18181b"/>
-  <circle cx="200" cy="160" r="60" fill="#3f3f46"/>
-  <ellipse cx="200" cy="320" rx="100" ry="80" fill="#3f3f46"/>
-  <text x="200" y="380" text-anchor="middle" fill="#71717a" font-family="sans-serif" font-size="14">Profile Photo</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" fill="none">
+  <rect width="256" height="256" fill="#ffffff"/>
+  <circle cx="128" cy="92" r="34" fill="#231f20"/>
+  <path d="M76 184C76 159.147 96.1472 139 121 139H135C159.853 139 180 159.147 180 184V192H76V184Z" fill="#231f20"/>
 </svg>

@@ -1,7 +1,6 @@
 "use client";
 
 import { useRef, useState, type ChangeEvent } from "react";
-import Image from "next/image";
 import { Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/utils/cn";
@@ -70,12 +69,10 @@ export function ImageUploadField({
 
       <div className="flex items-center gap-4">
         <div className="relative h-24 w-24 overflow-hidden rounded-2xl border border-zinc-700 bg-zinc-900/70">
-          <Image
+          <img
             src={previewSrc}
             alt={previewAlt}
-            fill
-            className="object-cover"
-            unoptimized={previewSrc.startsWith("data:")}
+            className="h-full w-full object-cover"
           />
         </div>
 
