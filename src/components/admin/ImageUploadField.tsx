@@ -37,6 +37,7 @@ export function ImageUploadField({
   const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    const previousValue = value;
 
     setIsUploading(true);
     setError("");
@@ -44,6 +45,9 @@ export function ImageUploadField({
     try {
       const url = await uploadService.uploadImage({ file, folder });
       onChange(url);
+      if (previousValue) {
+        void uploadService.deleteUploadedResource(previousValue);
+      }
     } catch (uploadError) {
       setError(uploadError instanceof Error ? uploadError.message : "Upload failed");
     } finally {
@@ -59,7 +63,13 @@ export function ImageUploadField({
         {value && (
           <button
             type="button"
-            onClick={() => onChange("")}
+            onClick={async () => {
+              const previousValue = value;
+              onChange("");
+              if (previousValue) {
+                await uploadService.deleteUploadedResource(previousValue);
+              }
+            }}
             className="inline-flex items-center gap-1 text-xs text-zinc-500 hover:text-zinc-300"
           >
             <X size={14} />
