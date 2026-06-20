@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { AdminNavbar } from "@/components/admin/AdminNavbar";
 import { Badge } from "@/components/ui/Badge";
 import { skillsService } from "@/services/skillsService";
+import { getDefaultSkills } from "@/data/defaults";
 import type { Skill, SkillCategory, Proficiency } from "@/types";
 import { cn } from "@/utils/cn";
 
@@ -22,9 +23,18 @@ export default function SkillsAdminPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   const loadSkills = async () => {
-    const data = await skillsService.getAll();
-    setSkills(data);
-    setIsLoading(false);
+    try {
+      const data = await skillsService.getAll();
+      const resolvedSkills = data.length > 0 ? data : getDefaultSkills();
+
+      setSkills(resolvedSkills);
+
+      if (data.length === 0) {
+        await skillsService.updateSkills(resolvedSkills);
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
