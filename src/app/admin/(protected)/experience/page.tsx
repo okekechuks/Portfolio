@@ -154,7 +154,7 @@ export default function ExperienceAdminPage() {
           <div className="space-y-4">
             <Input label="Company" value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} />
             <Input label="Role" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} />
-            <Input label="Duration" value={form.duration} onChange={(e) => setForm({ ...form, duration: e.target.value })} placeholder="2022 — Present" />
+            <Input label="Duration" value={form.duration} onChange={(e) => setForm({ ...form, duration: e.target.value })} placeholder="YYYY - YYYY/present" />
             <Textarea label="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
             <Input label="Technologies (comma-separated)" value={techInput} onChange={(e) => setTechInput(e.target.value)} />
             <Input label="Order" type="number" value={form.order} onChange={(e) => setForm({ ...form, order: parseInt(e.target.value) || 0 })} />
