@@ -1,5 +1,6 @@
 "use client";
 
+/* eslint-disable @next/next/no-img-element */
 import { motion } from "framer-motion";
 import { ExternalLink, Code2 } from "lucide-react";
 import type { Project } from "@/types";
@@ -12,14 +13,20 @@ interface ProjectCardProps {
 }
 
 export function ProjectCard({ project }: ProjectCardProps) {
+  const projectFallback = "/images/project-placeholder.svg";
+
   return (
     <motion.div initial="rest" whileHover="hover" variants={cardHover}>
       <Card hover className="h-full flex flex-col overflow-hidden p-0">
         <div className="relative h-48 w-full overflow-hidden bg-muted-bg">
           <img
-            src={project.image || "/images/project-placeholder.svg"}
+            src={project.image || projectFallback}
             alt={project.title}
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            onError={(event) => {
+              if (event.currentTarget.src.endsWith(projectFallback)) return;
+              event.currentTarget.src = projectFallback;
+            }}
           />
           {project.featured && (
             <span className="absolute top-3 right-3 rounded-lg bg-[var(--accent)] px-2 py-1 text-xs font-semibold text-white">

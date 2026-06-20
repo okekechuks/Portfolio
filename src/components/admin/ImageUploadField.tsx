@@ -1,5 +1,6 @@
 "use client";
 
+/* eslint-disable @next/next/no-img-element */
 import { useRef, useState, type ChangeEvent } from "react";
 import { Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
@@ -73,6 +74,10 @@ export function ImageUploadField({
             src={previewSrc}
             alt={previewAlt}
             className="h-full w-full object-cover"
+            onError={(event) => {
+              if (event.currentTarget.src.endsWith(fallbackSrc)) return;
+              event.currentTarget.src = fallbackSrc;
+            }}
           />
         </div>
 

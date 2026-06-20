@@ -1,5 +1,6 @@
 "use client";
 
+/* eslint-disable @next/next/no-img-element */
 import { motion } from "framer-motion";
 import { Download, Mail } from "lucide-react";
 import type { SiteSettings } from "@/types";
@@ -11,6 +12,8 @@ interface HeroSectionProps {
 }
 
 export function HeroSection({ settings }: HeroSectionProps) {
+  const profileFallback = "/images/profile-placeholder.svg";
+
   const scrollToContact = () => {
     document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" });
   };
@@ -64,10 +67,14 @@ export function HeroSection({ settings }: HeroSectionProps) {
             <div className="absolute inset-0 rounded-full bg-[var(--accent)]/20 blur-3xl" />
             <div className="relative h-64 w-64 sm:h-80 sm:w-80 rounded-full overflow-hidden border-4 border-border shadow-2xl">
               <img
-                src={settings.profileImage || "/images/profile-placeholder.svg"}
+                src={settings.profileImage || profileFallback}
                 alt={settings.name}
                 className="h-full w-full object-cover"
                 loading="eager"
+                onError={(event) => {
+                  if (event.currentTarget.src.endsWith(profileFallback)) return;
+                  event.currentTarget.src = profileFallback;
+                }}
               />
             </div>
           </div>
