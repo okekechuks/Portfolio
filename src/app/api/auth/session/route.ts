@@ -1,36 +1,35 @@
 import { NextRequest } from "next/server";
 import { jsonOk, jsonError } from "@/lib/api/response";
-import { setSessionCookie, clearSessionCookie, isAuthenticated } from "@/lib/auth/session";
+import {
+  clearSessionCookie,
+  isAuthenticated,
+  setSessionCookie,
+} from "@/lib/auth/session";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
-import { getAdminPassword, getAdminPhone } from "@/lib/db/seed";
-import { defaultSettings } from "@/data/defaults";
+import { getAdminPassword } from "@/lib/db/seed";
 
-async function validateCredentials(password: string): Promise<boolean> {
-  const trimmed = password.trim();
-
+async function getConfiguredPassword(): Promise<string> {
   if (isSupabaseConfigured()) {
-    const validPassword = await getAdminPassword();
-    const validPhone = await getAdminPhone();
-    return (
-      trimmed === validPassword ||
-      trimmed === validPhone ||
-      (trimmed === "08029315311" && validPassword === "admin123")
-    );
+    return await getAdminPassword();
   }
 
-  const validPassword = process.env.ADMIN_PASSWORD || defaultSettings.adminPassword;
-  const validPhone = defaultSettings.adminPhone;
-  return (
-    trimmed === validPassword ||
-    trimmed === validPhone ||
-    (trimmed === "08029315311" && validPassword === "admin123")
-  );
+  return process.env.ADMIN_PASSWORD?.trim() ?? "";
+}
+
+async function validateCredentials(password: string): Promise<boolean> {
+  const configuredPassword = await getConfiguredPassword();
+  return Boolean(configuredPassword) && password.trim() === configuredPassword;
 }
 
 export async function POST(request: NextRequest) {
   try {
     const { password } = await request.json();
     if (!password) return jsonError("Password is required", 400);
+
+    const configuredPassword = await getConfiguredPassword();
+    if (!configuredPassword) {
+      return jsonError("Admin password is not configured.", 503);
+    }
 
     const valid = await validateCredentials(password);
     if (!valid) return jsonError("Invalid password. Please try again.", 401);

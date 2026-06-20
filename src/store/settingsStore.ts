@@ -1,13 +1,13 @@
 import { create } from "zustand";
 import { settingsService } from "@/services/settingsService";
 import { subscribeToStorage } from "@/lib/storage";
-import type { SiteSettings } from "@/types";
+import type { AdminSettings } from "@/types";
 
 interface SettingsState {
-  settings: SiteSettings | null;
+  settings: AdminSettings | null;
   isLoading: boolean;
   fetchSettings: () => Promise<void>;
-  updateSettings: (updates: Partial<SiteSettings>) => Promise<void>;
+  updateSettings: (updates: Partial<AdminSettings>) => Promise<void>;
   subscribe: () => () => void;
 }
 
@@ -17,17 +17,17 @@ export const useSettingsStore = create<SettingsState>((set) => ({
 
   fetchSettings: async () => {
     set({ isLoading: true });
-    const settings = await settingsService.getSettings();
+    const settings = await settingsService.getAdminSettings();
     set({ settings, isLoading: false });
   },
 
-  updateSettings: async (updates: Partial<SiteSettings>) => {
+  updateSettings: async (updates: Partial<AdminSettings>) => {
     const updated = await settingsService.updateSettings(updates);
     set({ settings: updated });
   },
 
   subscribe: () => {
-    return subscribeToStorage<SiteSettings>("portfolio_settings", (settings) => {
+    return subscribeToStorage<AdminSettings>("portfolio_settings", (settings) => {
       set({ settings });
     });
   },

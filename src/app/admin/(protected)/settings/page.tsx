@@ -9,8 +9,8 @@ import { Card } from "@/components/ui/Card";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { settingsService } from "@/services/settingsService";
 import { useThemeStore } from "@/store/themeStore";
-import type { SiteSettings } from "@/types";
-import { defaultSettings } from "@/data/defaults";
+import type { AdminSettings } from "@/types";
+import { defaultAdminSettings } from "@/data/defaults";
 
 const ACCENT_COLORS = [
   { label: "Blue", value: "#3b82f6" },
@@ -22,15 +22,15 @@ const ACCENT_COLORS = [
 ];
 
 export default function SettingsAdminPage() {
-  const [settings, setSettings] = useState<SiteSettings>(defaultSettings);
+  const [settings, setSettings] = useState<AdminSettings>(defaultAdminSettings);
   const [saved, setSaved] = useState(false);
   const { setDarkMode, setAccentColor } = useThemeStore();
 
   useEffect(() => {
-    settingsService.getSettings({ admin: true }).then(setSettings);
+    settingsService.getAdminSettings().then(setSettings);
   }, []);
 
-  const update = (updates: Partial<SiteSettings>) => {
+  const update = (updates: Partial<AdminSettings>) => {
     setSettings((prev) => ({ ...prev, ...updates }));
     setSaved(false);
   };
@@ -138,11 +138,10 @@ export default function SettingsAdminPage() {
                 value={settings.adminPassword}
                 onChange={(e) => update({ adminPassword: e.target.value })}
               />
-              <Input
-                label="Admin Phone (for password reset)"
-                value={settings.adminPhone}
-                onChange={(e) => update({ adminPhone: e.target.value })}
-              />
+              <p className="text-sm text-zinc-400 leading-relaxed">
+                Self-service password reset is disabled in production. If you lose access,
+                rotate the admin password from your deployment or database directly.
+              </p>
             </div>
           </Card>
 

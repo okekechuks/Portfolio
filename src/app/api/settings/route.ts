@@ -1,11 +1,11 @@
 import { NextRequest } from "next/server";
-import { jsonOk, jsonError } from "@/lib/api/response";
+import { jsonError, jsonOk } from "@/lib/api/response";
 import { requireAuth } from "@/lib/api/requireAuth";
-import { isSupabaseConfigured, getSupabaseAdmin } from "@/lib/supabase/server";
+import { getSupabaseAdmin, isSupabaseConfigured } from "@/lib/supabase/server";
 import { seedDatabaseIfEmpty } from "@/lib/db/seed";
 import { mapSettings, stripSensitiveSettings } from "@/lib/db/mappers";
-import { defaultSettings } from "@/data/defaults";
-import type { SiteSettings } from "@/types";
+import { defaultAdminSettings, defaultSiteSettings } from "@/data/defaults";
+import type { AdminSettings } from "@/types";
 
 export async function GET(request: NextRequest) {
   try {
@@ -22,14 +22,15 @@ export async function GET(request: NextRequest) {
         .eq("id", "site")
         .single();
 
-      if (error || !data) return jsonOk(defaultSettings);
+      if (error || !data) {
+        return jsonOk(includeSensitive ? defaultAdminSettings : defaultSiteSettings);
+      }
 
       const settings = mapSettings(data);
       return jsonOk(includeSensitive ? settings : stripSensitiveSettings(settings));
     }
 
-    const settings = defaultSettings;
-    return jsonOk(includeSensitive ? settings : stripSensitiveSettings(settings));
+    return jsonOk(includeSensitive ? defaultAdminSettings : defaultSiteSettings);
   } catch {
     return jsonError("Failed to fetch settings", 500);
   }
@@ -40,7 +41,7 @@ export async function PATCH(request: NextRequest) {
   if (!auth.authed) return auth.response!;
 
   try {
-    const updates: Partial<SiteSettings> = await request.json();
+    const updates: Partial<AdminSettings> = await request.json();
 
     if (isSupabaseConfigured()) {
       const supabase = getSupabaseAdmin();

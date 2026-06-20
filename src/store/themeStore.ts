@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { settingsService } from "@/services/settingsService";
+import { defaultSiteSettings } from "@/data/defaults";
 import type { SiteSettings } from "@/types";
 
 interface ThemeState {
@@ -12,6 +13,8 @@ interface ThemeState {
   applyTheme: (settings: SiteSettings) => void;
 }
 
+const THEME_STORAGE_KEY = "portfolio_theme_preferences";
+
 function applyThemeToDOM(darkMode: boolean, accentColor: string) {
   if (typeof document === "undefined") return;
 
@@ -19,30 +22,65 @@ function applyThemeToDOM(darkMode: boolean, accentColor: string) {
   document.documentElement.style.setProperty("--accent", accentColor);
 }
 
+function readStoredTheme(): Partial<Pick<SiteSettings, "darkMode" | "accentColor">> {
+  if (typeof window === "undefined") return {};
+
+  try {
+    const raw = localStorage.getItem(THEME_STORAGE_KEY);
+    return raw
+      ? (JSON.parse(raw) as Partial<Pick<SiteSettings, "darkMode" | "accentColor">>)
+      : {};
+  } catch {
+    return {};
+  }
+}
+
+function persistTheme(darkMode: boolean, accentColor: string) {
+  if (typeof window === "undefined") return;
+
+  localStorage.setItem(
+    THEME_STORAGE_KEY,
+    JSON.stringify({ darkMode, accentColor })
+  );
+}
+
 export const useThemeStore = create<ThemeState>((set, get) => ({
-  darkMode: true,
-  accentColor: "#3b82f6",
+  darkMode: defaultSiteSettings.darkMode,
+  accentColor: defaultSiteSettings.accentColor,
   isHydrated: false,
 
   hydrate: async () => {
-    const settings = await settingsService.getSettings();
-    applyThemeToDOM(settings.darkMode, settings.accentColor);
+    let settings = defaultSiteSettings;
+
+    try {
+      settings = await settingsService.getSettings();
+    } catch {
+      settings = defaultSiteSettings;
+    }
+
+    const stored = readStoredTheme();
+    const darkMode = stored.darkMode ?? settings.darkMode;
+    const accentColor = stored.accentColor ?? settings.accentColor;
+
+    applyThemeToDOM(darkMode, accentColor);
     set({
-      darkMode: settings.darkMode,
-      accentColor: settings.accentColor,
+      darkMode,
+      accentColor,
       isHydrated: true,
     });
   },
 
   setDarkMode: async (darkMode: boolean) => {
-    await settingsService.updateSettings({ darkMode });
-    applyThemeToDOM(darkMode, get().accentColor);
+    const accentColor = get().accentColor;
+    persistTheme(darkMode, accentColor);
+    applyThemeToDOM(darkMode, accentColor);
     set({ darkMode });
   },
 
   setAccentColor: async (accentColor: string) => {
-    await settingsService.updateSettings({ accentColor });
-    applyThemeToDOM(get().darkMode, accentColor);
+    const darkMode = get().darkMode;
+    persistTheme(darkMode, accentColor);
+    applyThemeToDOM(darkMode, accentColor);
     set({ accentColor });
   },
 

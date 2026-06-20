@@ -1,29 +1,35 @@
 import { apiFetch } from "@/lib/api/client";
 import { isRemoteStorageEnabled } from "@/lib/config";
-import { defaultSettings } from "@/data/defaults";
+import { defaultAdminSettings } from "@/data/defaults";
 import { localGetSettings, localSetSettings } from "@/lib/db/localFallback";
-import type { SiteSettings } from "@/types";
+import { stripSensitiveSettings } from "@/lib/db/mappers";
+import type { AdminSettings, SiteSettings } from "@/types";
 
 export const settingsService = {
-  async getSettings(options?: { admin?: boolean }): Promise<SiteSettings> {
+  async getSettings(): Promise<SiteSettings> {
+    if (!isRemoteStorageEnabled()) {
+      return stripSensitiveSettings(localGetSettings());
+    }
+
+    return apiFetch<SiteSettings>("/api/settings");
+  },
+
+  async getAdminSettings(): Promise<AdminSettings> {
     if (!isRemoteStorageEnabled()) {
       return localGetSettings();
     }
 
-    const admin = options?.admin ?? false;
-    const query = admin ? "?admin=true" : "";
-    const settings = await apiFetch<
-      Omit<SiteSettings, "adminPassword"> & Partial<Pick<SiteSettings, "adminPassword">>
-    >(`/api/settings${query}`, admin ? { auth: true } : {});
+    const settings = await apiFetch<Partial<AdminSettings>>("/api/settings?admin=true", {
+      auth: true,
+    });
 
     return {
-      ...defaultSettings,
+      ...defaultAdminSettings,
       ...settings,
-      adminPassword: settings.adminPassword ?? defaultSettings.adminPassword,
     };
   },
 
-  async updateSettings(updates: Partial<SiteSettings>): Promise<SiteSettings> {
+  async updateSettings(updates: Partial<AdminSettings>): Promise<AdminSettings> {
     if (!isRemoteStorageEnabled()) {
       const current = localGetSettings();
       const updated = { ...current, ...updates };
@@ -31,14 +37,14 @@ export const settingsService = {
       return updated;
     }
 
-    return apiFetch<SiteSettings>("/api/settings", {
+    return apiFetch<AdminSettings>("/api/settings", {
       method: "PATCH",
       body: updates,
       auth: true,
     });
   },
 
-  async resetSettings(): Promise<SiteSettings> {
-    return this.updateSettings(defaultSettings);
+  async resetSettings(): Promise<AdminSettings> {
+    return this.updateSettings(defaultAdminSettings);
   },
 };

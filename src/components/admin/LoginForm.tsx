@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { Lock } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
 import { Button } from "@/components/ui/Button";
@@ -50,14 +49,9 @@ export function LoginForm() {
           Login
         </Button>
 
-        <div className="text-center">
-          <Link
-            href="/admin/forgot-password"
-            className="text-sm text-zinc-400 transition-colors hover:text-[var(--accent)]"
-          >
-            Forgot Password?
-          </Link>
-        </div>
+        <p className="text-center text-xs leading-relaxed text-zinc-500">
+          Password recovery is handled manually to keep the admin flow private and secure.
+        </p>
       </form>
     </Card>
   );

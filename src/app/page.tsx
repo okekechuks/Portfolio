@@ -9,13 +9,13 @@ import { SocialLinks } from "@/components/SocialLinks";
 import { SectionHeading } from "@/components/SectionHeading";
 import { ContrastToggle } from "@/components/ContrastToggle";
 import { usePortfolioData } from "@/hooks/usePortfolioData";
-import { defaultSettings } from "@/data/defaults";
+import { defaultSiteSettings } from "@/data/defaults";
 
 export default function HomePage() {
   const { skills, projects, experience, socials, settings, isLoading } =
     usePortfolioData();
 
-  const siteSettings = settings ?? defaultSettings;
+  const siteSettings = settings ?? defaultSiteSettings;
 
   if (isLoading) {
     return (

@@ -64,6 +64,9 @@ export interface SiteSettings {
   resumeUrl: string;
   accentColor: string;
   darkMode: boolean;
+}
+
+export interface AdminSettings extends SiteSettings {
   adminPassword: string;
   adminPhone: string;
 }

@@ -1,7 +1,7 @@
 import {
   defaultExperience,
+  defaultSiteSettings,
   defaultProjects,
-  defaultSettings,
   defaultSocials,
   getDefaultSkills,
 } from "@/data/defaults";
@@ -88,15 +88,15 @@ export async function seedDatabaseIfEmpty(): Promise<void> {
   if (!settingsRow) {
     await supabase.from("site_settings").insert({
       id: "site",
-      name: defaultSettings.name,
-      title: defaultSettings.title,
-      introduction: defaultSettings.introduction,
-      profile_image: defaultSettings.profileImage,
-      resume_url: defaultSettings.resumeUrl,
-      accent_color: defaultSettings.accentColor,
-      dark_mode: defaultSettings.darkMode,
-      admin_password: process.env.ADMIN_PASSWORD || defaultSettings.adminPassword,
-      admin_phone: defaultSettings.adminPhone,
+      name: defaultSiteSettings.name,
+      title: defaultSiteSettings.title,
+      introduction: defaultSiteSettings.introduction,
+      profile_image: defaultSiteSettings.profileImage,
+      resume_url: defaultSiteSettings.resumeUrl,
+      accent_color: defaultSiteSettings.accentColor,
+      dark_mode: defaultSiteSettings.darkMode,
+      admin_password: process.env.ADMIN_PASSWORD ?? "",
+      admin_phone: process.env.ADMIN_PHONE ?? "",
     });
   }
 }
@@ -112,9 +112,9 @@ export async function getAdminPassword(): Promise<string> {
     .single();
 
   return (
-    process.env.ADMIN_PASSWORD ||
+    process.env.ADMIN_PASSWORD?.trim() ||
     data?.admin_password ||
-    defaultSettings.adminPassword
+    ""
   );
 }
 
@@ -128,5 +128,5 @@ export async function getAdminPhone(): Promise<string> {
     .eq("id", "site")
     .single();
 
-  return data?.admin_phone || defaultSettings.adminPhone;
+  return data?.admin_phone || process.env.ADMIN_PHONE || "";
 }

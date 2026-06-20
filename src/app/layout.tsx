@@ -22,11 +22,15 @@ export const metadata: Metadata = {
 
 const themeInitScript = `
   try {
-    var stored = localStorage.getItem('portfolio_settings');
-    var dark = stored ? JSON.parse(stored).darkMode : true;
-    document.documentElement.classList.toggle('dark', dark !== false);
+    var stored = localStorage.getItem('portfolio_theme_preferences');
+    var parsed = stored ? JSON.parse(stored) : null;
+    var dark = parsed && typeof parsed.darkMode === 'boolean' ? parsed.darkMode : true;
+    var accent = parsed && typeof parsed.accentColor === 'string' ? parsed.accentColor : '#3b82f6';
+    document.documentElement.classList.toggle('dark', dark);
+    document.documentElement.style.setProperty('--accent', accent);
   } catch (e) {
     document.documentElement.classList.add('dark');
+    document.documentElement.style.setProperty('--accent', '#3b82f6');
   }
 `;
 

@@ -1,12 +1,12 @@
 import { isSupabaseConfigured } from "@/lib/supabase/server";
 import {
   defaultExperience,
+  defaultAdminSettings,
   defaultProjects,
-  defaultSettings,
   defaultSocials,
   getDefaultSkills,
 } from "@/data/defaults";
-import type { Experience, Project, SiteSettings, Skill, SocialLink } from "@/types";
+import type { AdminSettings, Experience, Project, Skill, SocialLink } from "@/types";
 import { getFromStorage, setInStorage } from "@/lib/storage";
 
 const KEYS = {
@@ -53,14 +53,10 @@ export function localSetSocials(socials: SocialLink[]): void {
   setInStorage(KEYS.socials, socials);
 }
 
-export function localGetSettings(): SiteSettings {
-  const settings = getFromStorage(KEYS.settings, defaultSettings);
-  if (settings.adminPassword === "admin123") {
-    return { ...settings, adminPassword: defaultSettings.adminPassword };
-  }
-  return settings;
+export function localGetSettings(): AdminSettings {
+  return getFromStorage(KEYS.settings, defaultAdminSettings);
 }
 
-export function localSetSettings(settings: SiteSettings): void {
+export function localSetSettings(settings: AdminSettings): void {
   setInStorage(KEYS.settings, settings);
 }

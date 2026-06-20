@@ -1,4 +1,11 @@
-import type { Experience, Project, SiteSettings, Skill, SocialLink } from "@/types";
+import type {
+  AdminSettings,
+  Experience,
+  Project,
+  SiteSettings,
+  Skill,
+  SocialLink,
+} from "@/types";
 
 export function mapSkill(row: Record<string, unknown>): Skill {
   return {
@@ -49,7 +56,7 @@ export function mapSocial(row: Record<string, unknown>): SocialLink {
   };
 }
 
-export function mapSettings(row: Record<string, unknown>): SiteSettings {
+export function mapSettings(row: Record<string, unknown>): AdminSettings {
   return {
     name: row.name as string,
     title: row.title as string,
@@ -63,8 +70,9 @@ export function mapSettings(row: Record<string, unknown>): SiteSettings {
   };
 }
 
-export function stripSensitiveSettings(settings: SiteSettings): Omit<SiteSettings, "adminPassword"> {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { adminPassword, ...publicSettings } = settings;
-  return publicSettings;
+export function stripSensitiveSettings(settings: AdminSettings): SiteSettings {
+  const publicSettings = { ...settings } as Partial<AdminSettings>;
+  delete publicSettings.adminPassword;
+  delete publicSettings.adminPhone;
+  return publicSettings as SiteSettings;
 }

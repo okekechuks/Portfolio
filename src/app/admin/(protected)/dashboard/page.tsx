@@ -77,9 +77,6 @@ export default function DashboardPage() {
             update experience, and configure social links. All changes are saved locally
             and reflected on the public site instantly.
           </p>
-          <p className="mt-3 text-xs text-zinc-500">
-            Default admin password: <code className="text-zinc-400">08029315311</code> — change it in Settings.
-          </p>
         </div>
       </div>
     </>

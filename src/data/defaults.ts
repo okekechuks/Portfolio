@@ -1,4 +1,5 @@
 import type {
+  AdminSettings,
   Experience,
   Project,
   SiteSettings,
@@ -207,7 +208,7 @@ export const defaultSocials: SocialLink[] = [
   },
 ];
 
-export const defaultSettings: SiteSettings = {
+export const defaultSiteSettings: SiteSettings = {
   name: "Chuka Okeke",
   title: "Software Developer",
   introduction:
@@ -216,6 +217,10 @@ export const defaultSettings: SiteSettings = {
   resumeUrl: "/resume.pdf",
   accentColor: "#3b82f6",
   darkMode: true,
-  adminPassword: "08029315311",
-  adminPhone: "08029315311",
+};
+
+export const defaultAdminSettings: AdminSettings = {
+  ...defaultSiteSettings,
+  adminPassword: "",
+  adminPhone: "",
 };

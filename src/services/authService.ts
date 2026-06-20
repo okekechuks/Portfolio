@@ -1,12 +1,12 @@
 import { apiFetch } from "@/lib/api/client";
 import { isRemoteStorageEnabled } from "@/lib/config";
-import { defaultSettings } from "@/data/defaults";
 import { getFromStorage, setInStorage } from "@/lib/storage";
 import type { AuthResponse, UserSession } from "@/types";
-import { localGetSettings, localSetSettings } from "@/lib/db/localFallback";
+import { localGetSettings } from "@/lib/db/localFallback";
 
 const SESSION_KEY = "portfolio_session" as const;
 const SESSION_DURATION_MS = 24 * 60 * 60 * 1000;
+const RESET_DISABLED_MESSAGE = "Self-service password reset is disabled.";
 
 function getLocalSession(): UserSession {
   return getFromStorage<UserSession>(SESSION_KEY, {
@@ -21,17 +21,17 @@ function saveLocalSession(session: UserSession): void {
 }
 
 async function localLogin(password: string): Promise<AuthResponse> {
-  const settings = localGetSettings();
-  const validPassword = settings.adminPassword || defaultSettings.adminPassword;
-  const validPhone = settings.adminPhone || defaultSettings.adminPhone;
+  const validPassword = localGetSettings().adminPassword.trim();
   const trimmed = password.trim();
 
-  const isValid =
-    trimmed === validPassword ||
-    trimmed === validPhone ||
-    (trimmed === "08029315311" && validPassword === "admin123");
+  if (!validPassword) {
+    return {
+      success: false,
+      message: "Admin password is not configured for local mode.",
+    };
+  }
 
-  if (!isValid) {
+  if (trimmed !== validPassword) {
     return { success: false, message: "Invalid password. Please try again." };
   }
 
@@ -77,50 +77,18 @@ export const authService = {
     }
   },
 
-  async forgotPassword(phoneNumber: string): Promise<AuthResponse> {
-    if (!isRemoteStorageEnabled()) {
-      const settings = localGetSettings();
-      const validPhone = settings.adminPhone || defaultSettings.adminPhone;
-      if (phoneNumber.trim() !== validPhone) {
-        return { success: false, message: "Phone number not recognized." };
-      }
-      return { success: true, message: "OTP sent to number" };
-    }
-
-    try {
-      return await apiFetch<AuthResponse>("/api/auth/forgot-password", {
-        method: "POST",
-        body: { phoneNumber },
-      });
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Request failed";
-      return { success: false, message };
-    }
+  async forgotPassword(): Promise<AuthResponse> {
+    return {
+      success: false,
+      message: RESET_DISABLED_MESSAGE,
+    };
   },
 
-  async resetPassword(phoneNumber: string, newPassword: string): Promise<AuthResponse> {
-    if (!isRemoteStorageEnabled()) {
-      const settings = localGetSettings();
-      const validPhone = settings.adminPhone || defaultSettings.adminPhone;
-      if (phoneNumber.trim() !== validPhone) {
-        return { success: false, message: "Phone number not recognized." };
-      }
-      localSetSettings({ ...settings, adminPassword: newPassword });
-      return {
-        success: true,
-        message: "Password reset successfully. You can now login with your new password.",
-      };
-    }
-
-    try {
-      return await apiFetch<AuthResponse>("/api/auth/forgot-password", {
-        method: "PUT",
-        body: { phoneNumber, newPassword },
-      });
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Reset failed";
-      return { success: false, message };
-    }
+  async resetPassword(): Promise<AuthResponse> {
+    return {
+      success: false,
+      message: RESET_DISABLED_MESSAGE,
+    };
   },
 
   async checkSession(): Promise<boolean> {
