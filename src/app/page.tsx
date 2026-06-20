@@ -44,7 +44,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <Footer socials={socials} name={siteSettings.name} />
+      <Footer name={siteSettings.name} />
     </main>
   );
 }
