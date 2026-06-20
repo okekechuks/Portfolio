@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/Textarea";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { ImageUploadField } from "@/components/admin/ImageUploadField";
 import { settingsService } from "@/services/settingsService";
 import { useThemeStore } from "@/store/themeStore";
 import type { AdminSettings } from "@/types";
@@ -66,10 +67,14 @@ export default function SettingsAdminPage() {
                 value={settings.introduction}
                 onChange={(e) => update({ introduction: e.target.value })}
               />
-              <Input
-                label="Profile Image URL"
+              <ImageUploadField
+                label="Profile Image"
                 value={settings.profileImage}
-                onChange={(e) => update({ profileImage: e.target.value })}
+                onChange={(profileImage) => update({ profileImage })}
+                folder="profile"
+                previewAlt={`${settings.name} profile photo`}
+                fallbackSrc="/images/profile-placeholder.svg"
+                helperText="Upload a square portrait image. We'll store it in Supabase and save the public URL for you."
               />
               <Input
                 label="Resume URL"

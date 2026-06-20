@@ -45,6 +45,6 @@ export const settingsService = {
   },
 
   async resetSettings(): Promise<AdminSettings> {
-    return this.updateSettings(defaultAdminSettings);
+    return settingsService.updateSettings(defaultAdminSettings);
   },
 };

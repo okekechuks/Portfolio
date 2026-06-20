@@ -55,9 +55,9 @@ export const skillsService = {
   },
 
   async toggleEnabled(id: string): Promise<Skill | null> {
-    const skills = await this.getAll();
+    const skills = await skillsService.getAll();
     const skill = skills.find((s) => s.id === id);
     if (!skill) return null;
-    return this.updateSkill(id, { enabled: !skill.enabled });
+    return skillsService.updateSkill(id, { enabled: !skill.enabled });
   },
 };

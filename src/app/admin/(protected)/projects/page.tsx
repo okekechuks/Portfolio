@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { Modal } from "@/components/ui/Modal";
 import { Badge } from "@/components/ui/Badge";
+import { ImageUploadField } from "@/components/admin/ImageUploadField";
 import {
   Table,
   TableHeader,
@@ -195,10 +196,14 @@ export default function ProjectsAdminPage() {
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
             />
-            <Input
-              label="Image URL"
+            <ImageUploadField
+              label="Project Image"
               value={form.image}
-              onChange={(e) => setForm({ ...form, image: e.target.value })}
+              onChange={(image) => setForm({ ...form, image })}
+              folder="projects"
+              previewAlt={form.title || "Project image"}
+              fallbackSrc="/images/project-placeholder.svg"
+              helperText="Upload a project thumbnail. We’ll store it in Supabase and keep the URL for the card."
             />
             <Input
               label="GitHub URL"

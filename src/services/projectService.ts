@@ -25,7 +25,7 @@ export const projectService = {
   },
 
   async getById(id: string): Promise<Project | null> {
-    const projects = await this.getAll();
+    const projects = await projectService.getAll();
     return projects.find((p) => p.id === id) ?? null;
   },
 
@@ -83,8 +83,8 @@ export const projectService = {
   },
 
   async toggleEnabled(id: string): Promise<Project | null> {
-    const project = await this.getById(id);
+    const project = await projectService.getById(id);
     if (!project) return null;
-    return this.update(id, { enabled: !project.enabled });
+    return projectService.update(id, { enabled: !project.enabled });
   },
 };

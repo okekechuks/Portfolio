@@ -31,7 +31,7 @@ export function AdminSidebar() {
     <aside className="flex h-full w-64 flex-col border-r border-zinc-800 bg-zinc-950">
       <div className="border-b border-zinc-800 p-6">
         <Link href="/admin/dashboard" className="text-lg font-bold text-zinc-100">
-          Portfolio<span className="text-[var(--accent)]">CMS</span>
+          Portfolio<span className="text-[var(--accent)]">MANAGER</span>
         </Link>
         <p className="mt-1 text-xs text-zinc-500">Admin Dashboard</p>
       </div>

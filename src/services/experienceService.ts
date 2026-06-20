@@ -20,7 +20,7 @@ export const experienceService = {
   },
 
   async getById(id: string): Promise<Experience | null> {
-    const items = await this.getAll();
+    const items = await experienceService.getAll();
     return items.find((e) => e.id === id) ?? null;
   },
 
@@ -78,8 +78,8 @@ export const experienceService = {
   },
 
   async toggleEnabled(id: string): Promise<Experience | null> {
-    const item = await this.getById(id);
+    const item = await experienceService.getById(id);
     if (!item) return null;
-    return this.update(id, { enabled: !item.enabled });
+    return experienceService.update(id, { enabled: !item.enabled });
   },
 };

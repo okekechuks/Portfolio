@@ -1,0 +1,88 @@
+import { NextRequest } from "next/server";
+import { jsonError, jsonOk } from "@/lib/api/response";
+import { requireAuth } from "@/lib/api/requireAuth";
+import { getSupabaseAdmin, isSupabaseConfigured } from "@/lib/supabase/server";
+
+const BUCKET = "portfolio-images";
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
+
+async function ensureBucketExists() {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase.storage.getBucket(BUCKET);
+
+  if (data) return;
+
+  if (error) {
+    const create = await supabase.storage.createBucket(BUCKET, {
+      public: true,
+    });
+
+    if (create.error) {
+      throw create.error;
+    }
+  }
+}
+
+function getFileExtension(file: File): string {
+  const parts = file.name.split(".");
+  if (parts.length < 2) return ".png";
+
+  const ext = parts.pop()?.toLowerCase() || "png";
+  return `.${ext.replace(/[^a-z0-9]/g, "") || "png"}`;
+}
+
+export async function POST(request: NextRequest) {
+  const auth = await requireAuth();
+  if (!auth.authed) return auth.response!;
+
+  try {
+    const formData = await request.formData();
+    const file = formData.get("file");
+    const folder = formData.get("folder");
+
+    if (!(file instanceof File)) {
+      return jsonError("An image file is required", 400);
+    }
+
+    if (typeof folder !== "string" || !["profile", "projects"].includes(folder)) {
+      return jsonError("Invalid upload folder", 400);
+    }
+
+    if (!file.type.startsWith("image/")) {
+      return jsonError("Only image files are allowed", 400);
+    }
+
+    if (file.size > MAX_FILE_SIZE) {
+      return jsonError("Image must be 5MB or smaller", 400);
+    }
+
+    if (!isSupabaseConfigured()) {
+      const bytes = Buffer.from(await file.arrayBuffer());
+      const base64 = bytes.toString("base64");
+      const mime = file.type || "image/png";
+      return jsonOk({ url: `data:${mime};base64,${base64}` });
+    }
+
+    await ensureBucketExists();
+
+    const supabase = getSupabaseAdmin();
+    const ext = getFileExtension(file);
+    const path = `${folder}/${crypto.randomUUID()}${ext}`;
+    const bytes = await file.arrayBuffer();
+
+    const { error } = await supabase.storage.from(BUCKET).upload(path, bytes, {
+      contentType: file.type,
+      upsert: false,
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
+    return jsonOk({ url: data.publicUrl });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Image upload failed";
+    return jsonError(message, 500);
+  }
+}

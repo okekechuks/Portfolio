@@ -17,11 +17,11 @@ export const socialsService = {
   },
 
   async update(id: string, updates: Partial<SocialLink>): Promise<SocialLink | null> {
-    const socials = await this.getAll();
+    const socials = await socialsService.getAll();
     const index = socials.findIndex((s) => s.id === id);
     if (index === -1) return null;
     socials[index] = { ...socials[index], ...updates };
-    const updated = await this.updateAll(socials);
+    const updated = await socialsService.updateAll(socials);
     return updated.find((s) => s.id === id) ?? null;
   },
 
@@ -38,8 +38,8 @@ export const socialsService = {
   },
 
   async toggleEnabled(id: string): Promise<SocialLink | null> {
-    const social = (await this.getAll()).find((s) => s.id === id);
+    const social = (await socialsService.getAll()).find((s) => s.id === id);
     if (!social) return null;
-    return this.update(id, { enabled: !social.enabled });
+    return socialsService.update(id, { enabled: !social.enabled });
   },
 };
