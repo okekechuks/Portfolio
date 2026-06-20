@@ -50,7 +50,7 @@ export function LoginForm() {
         </Button>
 
         <p className="text-center text-xs leading-relaxed text-zinc-500">
-          Password recovery is handled manually to keep the admin flow private and secure.
+          Login is protected by a password. If you are not the administrator, please do not attempt to access this page.
         </p>
       </form>
     </Card>
