@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { ImageUploadField } from "@/components/admin/ImageUploadField";
+import { DocumentUploadField } from "@/components/admin/DocumentUploadField";
 import { settingsService } from "@/services/settingsService";
 import { useThemeStore } from "@/store/themeStore";
 import type { AdminSettings } from "@/types";
@@ -76,10 +77,12 @@ export default function SettingsAdminPage() {
                 fallbackSrc="/images/profile-placeholder.svg"
                 helperText="Upload a square portrait image. We'll store it in Supabase and save the public URL for you."
               />
-              <Input
-                label="Resume URL"
+              <DocumentUploadField
+                label="Resume PDF"
                 value={settings.resumeUrl}
-                onChange={(e) => update({ resumeUrl: e.target.value })}
+                onChange={(resumeUrl) => update({ resumeUrl })}
+                folder="resumes"
+                helperText="Upload your resume as a PDF. The public site will use a download link from the same domain."
               />
             </div>
           </Card>
