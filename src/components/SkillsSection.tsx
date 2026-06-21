@@ -5,6 +5,7 @@ import type { Skill, SkillCategory } from "@/types";
 import { SkillBadge } from "@/components/SkillBadge";
 import { SectionHeading } from "@/components/SectionHeading";
 import { staggerContainer, fadeInUp } from "@/animations/variants";
+import { getDefaultSkills } from "@/data/defaults";
 
 interface SkillsSectionProps {
   skills: Skill[];
@@ -19,9 +20,11 @@ const CATEGORIES: SkillCategory[] = [
 ];
 
 export function SkillsSection({ skills }: SkillsSectionProps) {
+  const displaySkills = skills.length > 0 ? skills : getDefaultSkills();
+
   const grouped = CATEGORIES.reduce(
     (acc, category) => {
-      const categorySkills = skills.filter((s) => s.category === category);
+      const categorySkills = displaySkills.filter((s) => s.category === category);
       if (categorySkills.length > 0) {
         acc[category] = categorySkills;
       }
@@ -29,8 +32,6 @@ export function SkillsSection({ skills }: SkillsSectionProps) {
     },
     {} as Record<string, Skill[]>
   );
-
-  if (skills.length === 0) return null;
 
   return (
     <section id="skills" className="py-24 px-4 sm:px-6 lg:px-8">
