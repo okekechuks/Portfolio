@@ -20,7 +20,10 @@ const PROFICIENCIES: Proficiency[] = ["Beginner", "Intermediate", "Advanced"];
 
 export default function SkillsAdminPage() {
   const [skills, setSkills] = useState<Skill[]>([]);
+  const [savedSkills, setSavedSkills] = useState<Skill[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const loadSkills = async () => {
     try {
@@ -28,6 +31,7 @@ export default function SkillsAdminPage() {
       const resolvedSkills = data.length > 0 ? data : getDefaultSkills();
 
       setSkills(resolvedSkills);
+      setSavedSkills(resolvedSkills);
 
       if (data.length === 0) {
         await skillsService.updateSkills(resolvedSkills);
@@ -41,20 +45,35 @@ export default function SkillsAdminPage() {
     loadSkills();
   }, []);
 
-  const updateSkill = async (id: string, updates: Partial<Skill>) => {
-    let nextSkills: Skill[] = [];
-
-    setSkills((currentSkills) => {
-      nextSkills = currentSkills.map((skill) =>
+  const updateSkill = (id: string, updates: Partial<Skill>) => {
+    setSkills((currentSkills) =>
+      currentSkills.map((skill) =>
         skill.id === id ? { ...skill, ...updates } : skill
-      );
-      return nextSkills;
-    });
+      )
+    );
+  };
 
-    const savedSkill = await skillsService.updateSkill(id, updates);
+  const hasChanges = skills.some((skill, index) => {
+    const original = savedSkills[index];
+    return (
+      !original ||
+      original.enabled !== skill.enabled ||
+      original.learning !== skill.learning ||
+      original.proficiency !== skill.proficiency
+    );
+  }) || skills.length !== savedSkills.length;
 
-    if (!savedSkill) {
-      await loadSkills();
+  const applyChanges = async () => {
+    setIsSaving(true);
+    setSaveError(null);
+    try {
+      await skillsService.updateSkills(skills);
+      setSavedSkills(skills);
+    } catch {
+      setSkills(savedSkills);
+      setSaveError("Unable to save changes. Please check your session and try again.");
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -98,15 +117,12 @@ export default function SkillsAdminPage() {
                     <span className="font-medium text-zinc-100">{skill.name}</span>
                     {skill.learning && <Badge variant="learning">Learning</Badge>}
                   </div>
-
                   <div className="mt-3 space-y-3">
                     <label className="flex items-center gap-2 text-sm text-zinc-400">
                       <input
                         type="checkbox"
                         checked={skill.enabled}
-                        onChange={() =>
-                          updateSkill(skill.id, { enabled: !skill.enabled })
-                        }
+                        onChange={() => updateSkill(skill.id, { enabled: !skill.enabled })}
                         className="rounded border-zinc-600 bg-zinc-800 text-[var(--accent)] focus:ring-[var(--accent)]"
                       />
                       Enabled
@@ -116,9 +132,7 @@ export default function SkillsAdminPage() {
                       <input
                         type="checkbox"
                         checked={skill.learning}
-                        onChange={() =>
-                          updateSkill(skill.id, { learning: !skill.learning })
-                        }
+                        onChange={() => updateSkill(skill.id, { learning: !skill.learning })}
                         className="rounded border-zinc-600 bg-zinc-800 text-[var(--accent)] focus:ring-[var(--accent)]"
                       />
                       Learning
@@ -126,11 +140,7 @@ export default function SkillsAdminPage() {
 
                     <select
                       value={skill.proficiency}
-                      onChange={(e) =>
-                        updateSkill(skill.id, {
-                          proficiency: e.target.value as Proficiency,
-                        })
-                      }
+                      onChange={(e) => updateSkill(skill.id, { proficiency: e.target.value as Proficiency })}
                       className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-1.5 text-sm text-zinc-300 focus:border-[var(--accent)] focus:outline-none"
                     >
                       {PROFICIENCIES.map((p) => (
@@ -145,6 +155,23 @@ export default function SkillsAdminPage() {
             </div>
           </div>
         ))}
+
+        <div className="sticky bottom-0 mt-6 border-t border-zinc-800 bg-zinc-950/95 pt-4">
+          <button
+            type="button"
+            onClick={applyChanges}
+            disabled={!hasChanges || isSaving}
+            className={cn(
+              "w-full rounded-lg px-4 py-2 text-sm font-medium transition-colors",
+              hasChanges && !isSaving
+                ? "bg-[var(--accent)] text-white hover:opacity-90"
+                : "cursor-not-allowed bg-zinc-800 text-zinc-500"
+            )}
+          >
+            {isSaving ? "Applying..." : "Apply Changes"}
+          </button>
+          {saveError && <p className="mt-2 text-sm text-red-400">{saveError}</p>}
+        </div>
       </div>
     </>
   );
