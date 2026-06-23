@@ -1,19 +1,22 @@
-import { apiFetch } from "@/lib/api/client";
-import { isRemoteStorageEnabled } from "@/lib/config";
+import { ApiError, apiFetch } from "@/lib/api/client";
 import { localGetSkills, localSetSkills } from "@/lib/db/localFallback";
 import type { Skill } from "@/types";
 
 export const skillsService = {
   async getAll(): Promise<Skill[]> {
-    if (!isRemoteStorageEnabled()) return localGetSkills();
-    return apiFetch<Skill[]>("/api/skills?all=true", { auth: true });
+    try {
+      return await apiFetch<Skill[]>("/api/skills?all=true", { auth: true });
+    } catch {
+      return localGetSkills();
+    }
   },
 
   async getEnabled(): Promise<Skill[]> {
-    if (!isRemoteStorageEnabled()) {
+    try {
+      return await apiFetch<Skill[]>("/api/skills");
+    } catch {
       return localGetSkills().filter((s) => s.enabled);
     }
-    return apiFetch<Skill[]>("/api/skills");
   },
 
   async getByCategory(category: string): Promise<Skill[]> {
@@ -22,7 +25,17 @@ export const skillsService = {
   },
 
   async updateSkill(id: string, updates: Partial<Skill>): Promise<Skill | null> {
-    if (!isRemoteStorageEnabled()) {
+    try {
+      return await apiFetch<Skill>(`/api/skills/${id}`, {
+        method: "PATCH",
+        body: updates,
+        auth: true,
+      });
+    } catch (error) {
+      if (error instanceof ApiError && error.status !== 503) {
+        return null;
+      }
+
       const skills = localGetSkills();
       const index = skills.findIndex((s) => s.id === id);
       if (index === -1) return null;
@@ -30,28 +43,23 @@ export const skillsService = {
       localSetSkills(skills);
       return skills[index];
     }
-
-    try {
-      return await apiFetch<Skill>(`/api/skills/${id}`, {
-        method: "PATCH",
-        body: updates,
-        auth: true,
-      });
-    } catch {
-      return null;
-    }
   },
 
   async updateSkills(updatedSkills: Skill[]): Promise<Skill[]> {
-    if (!isRemoteStorageEnabled()) {
+    try {
+      return await apiFetch<Skill[]>("/api/skills", {
+        method: "PUT",
+        body: updatedSkills,
+        auth: true,
+      });
+    } catch (error) {
+      if (error instanceof ApiError && error.status !== 503) {
+        throw error;
+      }
+
       localSetSkills(updatedSkills);
       return updatedSkills;
     }
-    return apiFetch<Skill[]>("/api/skills", {
-      method: "PUT",
-      body: updatedSkills,
-      auth: true,
-    });
   },
 
   async toggleEnabled(id: string): Promise<Skill | null> {

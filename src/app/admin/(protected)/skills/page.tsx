@@ -70,9 +70,10 @@ export default function SkillsAdminPage() {
     setSaveError(null);
     setSaveMessage(null);
     try {
-      await skillsService.updateSkills(skills);
+      const saved = await skillsService.updateSkills(skills);
       await loadSkills();
-      setSaveMessage("Changes applied.");
+      const enabledCount = saved.filter((skill) => skill.enabled).length;
+      setSaveMessage(`Changes applied. ${enabledCount} skills enabled.`);
     } catch {
       setSkills(savedSkills);
       setSaveError("Unable to save changes. Please check your session and try again.");

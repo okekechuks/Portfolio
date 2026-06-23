@@ -56,12 +56,13 @@ export async function PUT(request: NextRequest) {
         proficiency: skill.proficiency,
       }));
 
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("skills")
-        .upsert(payload, { onConflict: "id" });
+        .upsert(payload, { onConflict: "id" })
+        .select("*");
 
       if (error) throw error;
-      return jsonOk(skills);
+      return jsonOk((data ?? []).map(mapSkill));
     }
 
     return jsonError("Database not configured", 503);
