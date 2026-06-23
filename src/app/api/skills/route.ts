@@ -10,21 +10,25 @@ import type { Skill } from "@/types";
 export async function GET(request: NextRequest) {
   try {
     const all = request.nextUrl.searchParams.get("all") === "true";
-    const auth = await requireAuth();
-    const includeAll = all && auth.authed;
+    let includeAll = false;
+
+    if (all) {
+      const auth = await requireAuth();
+      includeAll = auth.authed;
+    }
 
     if (isSupabaseConfigured()) {
       await seedDatabaseIfEmpty();
       const supabase = getSupabaseAdmin();
-      let query = supabase.from("skills").select("*").order("category").order("name");
-
-      if (!includeAll) {
-        query = query.eq("enabled", true);
-      }
-
-      const { data, error } = await query;
+      const { data, error } = await supabase
+        .from("skills")
+        .select("*")
+        .order("category")
+        .order("name");
       if (error) throw error;
-      return jsonOk((data ?? []).map(mapSkill));
+
+      const skills = (data ?? []).map(mapSkill);
+      return jsonOk(includeAll ? skills : skills.filter((skill) => skill.enabled));
     }
 
     const skills = getDefaultSkills();

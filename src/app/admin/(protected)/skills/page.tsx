@@ -24,6 +24,7 @@ export default function SkillsAdminPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [saveMessage, setSaveMessage] = useState<string | null>(null);
 
   const loadSkills = async () => {
     try {
@@ -46,6 +47,7 @@ export default function SkillsAdminPage() {
   }, []);
 
   const updateSkill = (id: string, updates: Partial<Skill>) => {
+    setSaveMessage(null);
     setSkills((currentSkills) =>
       currentSkills.map((skill) =>
         skill.id === id ? { ...skill, ...updates } : skill
@@ -66,9 +68,11 @@ export default function SkillsAdminPage() {
   const applyChanges = async () => {
     setIsSaving(true);
     setSaveError(null);
+    setSaveMessage(null);
     try {
       await skillsService.updateSkills(skills);
       await loadSkills();
+      setSaveMessage("Changes applied.");
     } catch {
       setSkills(savedSkills);
       setSaveError("Unable to save changes. Please check your session and try again.");
@@ -170,6 +174,9 @@ export default function SkillsAdminPage() {
           >
             {isSaving ? "Applying..." : "Apply Changes"}
           </button>
+          {saveMessage && (
+            <p className="mt-2 text-sm text-green-400">{saveMessage}</p>
+          )}
           {saveError && <p className="mt-2 text-sm text-red-400">{saveError}</p>}
         </div>
       </div>

@@ -20,7 +20,7 @@ export function usePortfolioData() {
     setIsLoading(true);
     try {
       const [skillsData, projectsData, experienceData, socialsData, settingsData] =
-        await Promise.all([
+        await Promise.allSettled([
           skillsService.getEnabled(),
           projectService.getEnabled(),
           experienceService.getEnabled(),
@@ -28,11 +28,13 @@ export function usePortfolioData() {
           settingsService.getSettings(),
         ]);
 
-      setSkills(skillsData);
-      setProjects(projectsData);
-      setExperience(experienceData);
-      setSocials(socialsData);
-      setSettings(settingsData);
+      setSkills(skillsData.status === "fulfilled" ? skillsData.value : []);
+      setProjects(projectsData.status === "fulfilled" ? projectsData.value : []);
+      setExperience(
+        experienceData.status === "fulfilled" ? experienceData.value : []
+      );
+      setSocials(socialsData.status === "fulfilled" ? socialsData.value : []);
+      setSettings(settingsData.status === "fulfilled" ? settingsData.value : null);
     } finally {
       setIsLoading(false);
     }
@@ -40,6 +42,20 @@ export function usePortfolioData() {
 
   useEffect(() => {
     loadData();
+
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === "visible") {
+        loadData();
+      }
+    };
+
+    window.addEventListener("focus", loadData);
+    document.addEventListener("visibilitychange", refreshWhenVisible);
+
+    return () => {
+      window.removeEventListener("focus", loadData);
+      document.removeEventListener("visibilitychange", refreshWhenVisible);
+    };
   }, []);
 
   return { skills, projects, experience, socials, settings, isLoading, refresh: loadData };
