@@ -11,7 +11,19 @@ interface ProjectsSectionProps {
 }
 
 export function ProjectsSection({ projects }: ProjectsSectionProps) {
-  if (projects.length === 0) return null;
+  if (projects.length === 0) {
+    return (
+      <section id="projects" className="py-24 px-4 sm:px-6 lg:px-8 bg-surface/50">
+        <div className="mx-auto max-w-6xl">
+          <SectionHeading
+            title="Projects"
+            subtitle="Things I've built and contributed to"
+          />
+          <p className="text-sm text-muted">No projects have been enabled yet.</p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section id="projects" className="py-24 px-4 sm:px-6 lg:px-8 bg-surface/50">

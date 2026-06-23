@@ -18,6 +18,7 @@ export async function apiFetch<T>(path: string, options: ApiOptions = {}): Promi
 
   const res = await fetch(path, {
     method,
+    cache: "no-store",
     credentials: auth ? "include" : "same-origin",
     headers: body ? { "Content-Type": "application/json" } : undefined,
     body: body ? JSON.stringify(body) : undefined,
