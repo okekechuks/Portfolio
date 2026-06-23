@@ -11,7 +11,19 @@ interface ExperienceSectionProps {
 }
 
 export function ExperienceSection({ experience }: ExperienceSectionProps) {
-  if (experience.length === 0) return null;
+  if (experience.length === 0) {
+    return (
+      <section id="experience" className="py-24 px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-3xl">
+          <SectionHeading
+            title="Experience"
+            subtitle="Where I've worked and what I've done"
+          />
+          <p className="text-sm text-muted">No experience entries have been enabled yet.</p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section id="experience" className="py-24 px-4 sm:px-6 lg:px-8">

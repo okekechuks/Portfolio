@@ -68,7 +68,7 @@ export default function SkillsAdminPage() {
     setSaveError(null);
     try {
       await skillsService.updateSkills(skills);
-      setSavedSkills(skills);
+      await loadSkills();
     } catch {
       setSkills(savedSkills);
       setSaveError("Unable to save changes. Please check your session and try again.");

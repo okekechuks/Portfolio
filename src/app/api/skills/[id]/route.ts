@@ -24,12 +24,12 @@ export async function PATCH(
     const supabase = getSupabaseAdmin();
     const { data, error } = await supabase
       .from("skills")
-      .update({
+      .upsert({
+        id,
         enabled: updates.enabled,
         learning: updates.learning,
         proficiency: updates.proficiency,
-      })
-      .eq("id", id)
+      }, { onConflict: "id" })
       .select("*")
       .single();
 

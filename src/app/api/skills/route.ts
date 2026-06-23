@@ -43,16 +43,20 @@ export async function PUT(request: NextRequest) {
 
     if (isSupabaseConfigured()) {
       const supabase = getSupabaseAdmin();
-      for (const skill of skills) {
-        await supabase
-          .from("skills")
-          .update({
-            enabled: skill.enabled,
-            learning: skill.learning,
-            proficiency: skill.proficiency,
-          })
-          .eq("id", skill.id);
-      }
+      const payload = skills.map((skill) => ({
+        id: skill.id,
+        name: skill.name,
+        category: skill.category,
+        enabled: skill.enabled,
+        learning: skill.learning,
+        proficiency: skill.proficiency,
+      }));
+
+      const { error } = await supabase
+        .from("skills")
+        .upsert(payload, { onConflict: "id" });
+
+      if (error) throw error;
       return jsonOk(skills);
     }
 
