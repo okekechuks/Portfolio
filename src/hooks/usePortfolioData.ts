@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { skillsService } from "@/services/skillsService";
 import { projectService } from "@/services/projectService";
 import { experienceService } from "@/services/experienceService";
 import { socialsService } from "@/services/socialsService";
 import { settingsService } from "@/services/settingsService";
+import { useThemeStore } from "@/store/themeStore";
 import type { Experience, Project, Skill, SocialLink, SiteSettings } from "@/types";
 
 export function usePortfolioData() {
@@ -15,8 +16,9 @@ export function usePortfolioData() {
   const [socials, setSocials] = useState<SocialLink[]>([]);
   const [settings, setSettings] = useState<SiteSettings | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const applyTheme = useThemeStore((state) => state.applyTheme);
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setIsLoading(true);
     try {
       const [skillsData, projectsData, experienceData, socialsData, settingsData] =
@@ -34,18 +36,23 @@ export function usePortfolioData() {
         experienceData.status === "fulfilled" ? experienceData.value : []
       );
       setSocials(socialsData.status === "fulfilled" ? socialsData.value : []);
-      setSettings(settingsData.status === "fulfilled" ? settingsData.value : null);
+      if (settingsData.status === "fulfilled") {
+        setSettings(settingsData.value);
+        applyTheme(settingsData.value);
+      } else {
+        setSettings(null);
+      }
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [applyTheme]);
 
   useEffect(() => {
-    loadData();
+    void loadData();
 
     const refreshWhenVisible = () => {
       if (document.visibilityState === "visible") {
-        loadData();
+        void loadData();
       }
     };
 
@@ -56,7 +63,7 @@ export function usePortfolioData() {
       window.removeEventListener("focus", loadData);
       document.removeEventListener("visibilitychange", refreshWhenVisible);
     };
-  }, []);
+  }, [loadData]);
 
   return { skills, projects, experience, socials, settings, isLoading, refresh: loadData };
 }

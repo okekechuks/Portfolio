@@ -22,19 +22,6 @@ function applyThemeToDOM(darkMode: boolean, accentColor: string) {
   document.documentElement.style.setProperty("--accent", accentColor);
 }
 
-function readStoredTheme(): Partial<Pick<SiteSettings, "darkMode" | "accentColor">> {
-  if (typeof window === "undefined") return {};
-
-  try {
-    const raw = localStorage.getItem(THEME_STORAGE_KEY);
-    return raw
-      ? (JSON.parse(raw) as Partial<Pick<SiteSettings, "darkMode" | "accentColor">>)
-      : {};
-  } catch {
-    return {};
-  }
-}
-
 function persistTheme(darkMode: boolean, accentColor: string) {
   if (typeof window === "undefined") return;
 
@@ -42,6 +29,12 @@ function persistTheme(darkMode: boolean, accentColor: string) {
     THEME_STORAGE_KEY,
     JSON.stringify({ darkMode, accentColor })
   );
+}
+
+function clearStoredTheme() {
+  if (typeof window === "undefined") return;
+
+  localStorage.removeItem(THEME_STORAGE_KEY);
 }
 
 export const useThemeStore = create<ThemeState>((set, get) => ({
@@ -58,11 +51,11 @@ export const useThemeStore = create<ThemeState>((set, get) => ({
       settings = defaultSiteSettings;
     }
 
-    const stored = readStoredTheme();
-    const darkMode = stored.darkMode ?? settings.darkMode;
-    const accentColor = stored.accentColor ?? settings.accentColor;
+    const darkMode = settings.darkMode;
+    const accentColor = settings.accentColor;
 
     applyThemeToDOM(darkMode, accentColor);
+    clearStoredTheme();
     set({
       darkMode,
       accentColor,
@@ -86,6 +79,7 @@ export const useThemeStore = create<ThemeState>((set, get) => ({
 
   applyTheme: (settings: SiteSettings) => {
     applyThemeToDOM(settings.darkMode, settings.accentColor);
+    clearStoredTheme();
     set({
       darkMode: settings.darkMode,
       accentColor: settings.accentColor,
