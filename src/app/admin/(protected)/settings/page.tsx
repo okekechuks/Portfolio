@@ -26,6 +26,7 @@ const ACCENT_COLORS = [
 export default function SettingsAdminPage() {
   const [settings, setSettings] = useState<AdminSettings>(defaultAdminSettings);
   const [saved, setSaved] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const { setDarkMode, setAccentColor } = useThemeStore();
 
   useEffect(() => {
@@ -35,14 +36,22 @@ export default function SettingsAdminPage() {
   const update = (updates: Partial<AdminSettings>) => {
     setSettings((prev) => ({ ...prev, ...updates }));
     setSaved(false);
+    setSaveError(null);
   };
 
   const handleSave = async () => {
-    await settingsService.updateSettings(settings);
-    setDarkMode(settings.darkMode);
-    setAccentColor(settings.accentColor);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+    try {
+      const savedSettings = await settingsService.updateSettings(settings);
+      setSettings(savedSettings);
+      await setDarkMode(savedSettings.darkMode);
+      await setAccentColor(savedSettings.accentColor);
+      setSaved(true);
+      setSaveError(null);
+      setTimeout(() => setSaved(false), 3000);
+    } catch {
+      setSaved(false);
+      setSaveError("Unable to save settings to the database. Check the Vercel Supabase environment variables.");
+    }
   };
 
   return (
@@ -161,6 +170,9 @@ export default function SettingsAdminPage() {
             <p className="text-center text-sm text-green-400">
               Settings saved successfully!
             </p>
+          )}
+          {saveError && (
+            <p className="text-center text-sm text-red-400">{saveError}</p>
           )}
         </div>
       </div>

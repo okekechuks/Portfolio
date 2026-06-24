@@ -7,6 +7,9 @@ import { mapSettings, stripSensitiveSettings } from "@/lib/db/mappers";
 import { defaultAdminSettings, defaultSiteSettings } from "@/data/defaults";
 import type { AdminSettings } from "@/types";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export async function GET(request: NextRequest) {
   try {
     const admin = request.nextUrl.searchParams.get("admin") === "true";
@@ -45,7 +48,26 @@ export async function PATCH(request: NextRequest) {
 
     if (isSupabaseConfigured()) {
       const supabase = getSupabaseAdmin();
-      const row: Record<string, unknown> = {};
+      const { data: current } = await supabase
+        .from("site_settings")
+        .select("*")
+        .eq("id", "site")
+        .maybeSingle();
+      const base = current ? mapSettings(current) : defaultAdminSettings;
+      const merged = { ...base, ...updates };
+      const row: Record<string, unknown> = {
+        id: "site",
+        name: merged.name,
+        title: merged.title,
+        introduction: merged.introduction,
+        profile_image: merged.profileImage,
+        resume_url: merged.resumeUrl,
+        accent_color: merged.accentColor,
+        dark_mode: merged.darkMode,
+        admin_password: merged.adminPassword,
+        admin_phone: merged.adminPhone,
+      };
+
       if (updates.name !== undefined) row.name = updates.name;
       if (updates.title !== undefined) row.title = updates.title;
       if (updates.introduction !== undefined) row.introduction = updates.introduction;
@@ -58,8 +80,7 @@ export async function PATCH(request: NextRequest) {
 
       const { data, error } = await supabase
         .from("site_settings")
-        .update(row)
-        .eq("id", "site")
+        .upsert(row, { onConflict: "id" })
         .select("*")
         .single();
 

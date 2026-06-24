@@ -23,6 +23,9 @@ export const metadata: Metadata = {
   keywords: ["portfolio", "software developer", "C#", ".NET", "TypeScript", "React", "Next.js"],
 };
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 async function getThemeSettings() {
   if (!isSupabaseConfigured()) {
     return defaultSiteSettings;
