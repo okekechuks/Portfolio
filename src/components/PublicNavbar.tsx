@@ -17,18 +17,21 @@ export function PublicNavbar() {
         aria-label="Primary"
         className="mx-auto flex h-16 max-w-6xl items-center justify-center px-4 sm:px-6 lg:px-8"
       >
-        <div className="flex w-full items-center justify-start gap-2 overflow-x-auto text-sm sm:justify-center sm:gap-3">
+        <div className="flex w-full flex-wrap items-center justify-start gap-2 text-sm sm:justify-center sm:gap-3">
           {NAV_ITEMS.map((item) => (
             <a
               key={item.href}
               href={item.href}
               className={cn(
-                "group relative rounded-full px-3 py-2 text-muted transition-colors hover:bg-card hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                "group relative inline-flex rounded-full px-3 py-2 text-muted transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
                 item.label === "Home" && "text-foreground"
               )}
             >
               {item.label}
-              <span className="absolute left-3 right-3 -bottom-0.5 h-px origin-left scale-x-0 bg-[var(--accent)] transition-transform duration-300 group-hover:scale-x-100" />
+              <span
+                aria-hidden="true"
+                className="absolute inset-x-3 -bottom-0.5 h-px origin-left scale-x-0 bg-[var(--accent)] transition-transform duration-300 ease-out group-hover:scale-x-100"
+              />
             </a>
           ))}
         </div>
