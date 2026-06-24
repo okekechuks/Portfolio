@@ -23,11 +23,12 @@ export function PublicNavbar() {
               key={item.href}
               href={item.href}
               className={cn(
-                "rounded-full px-3 py-2 text-muted transition-colors hover:bg-card hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                "group relative rounded-full px-3 py-2 text-muted transition-colors hover:bg-card hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
                 item.label === "Home" && "text-foreground"
               )}
             >
               {item.label}
+              <span className="absolute left-3 right-3 -bottom-0.5 h-px origin-left scale-x-0 bg-[var(--accent)] transition-transform duration-300 group-hover:scale-x-100" />
             </a>
           ))}
         </div>
