@@ -8,6 +8,7 @@ import { Footer } from "@/components/Footer";
 import { SocialLinks } from "@/components/SocialLinks";
 import { SectionHeading } from "@/components/SectionHeading";
 import { ContrastToggle } from "@/components/ContrastToggle";
+import { PublicNavbar } from "@/components/PublicNavbar";
 import { usePortfolioData } from "@/hooks/usePortfolioData";
 import { defaultSiteSettings } from "@/data/defaults";
 
@@ -27,13 +28,17 @@ export default function HomePage() {
 
   return (
     <main className="bg-background">
+      <PublicNavbar />
       <ContrastToggle />
       <HeroSection settings={siteSettings} />
       <SkillsSection skills={skills} />
       <ProjectsSection projects={projects} />
       <ExperienceSection experience={experience} />
 
-      <section id="contact" className="py-24 px-4 sm:px-6 lg:px-8 bg-surface/50">
+      <section
+        id="contact"
+        className="scroll-mt-28 py-24 px-4 sm:px-6 lg:px-8 bg-surface/50"
+      >
         <div className="mx-auto max-w-6xl text-center">
           <SectionHeading
             title="Contact"

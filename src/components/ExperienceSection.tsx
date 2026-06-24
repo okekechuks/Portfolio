@@ -13,7 +13,10 @@ interface ExperienceSectionProps {
 export function ExperienceSection({ experience }: ExperienceSectionProps) {
   if (experience.length === 0) {
     return (
-      <section id="experience" className="py-24 px-4 sm:px-6 lg:px-8">
+      <section
+        id="experience"
+        className="scroll-mt-28 py-24 px-4 sm:px-6 lg:px-8"
+      >
         <div className="mx-auto max-w-3xl">
           <SectionHeading
             title="Experience"
@@ -26,7 +29,10 @@ export function ExperienceSection({ experience }: ExperienceSectionProps) {
   }
 
   return (
-    <section id="experience" className="py-24 px-4 sm:px-6 lg:px-8">
+    <section
+      id="experience"
+      className="scroll-mt-28 py-24 px-4 sm:px-6 lg:px-8"
+    >
       <div className="mx-auto max-w-3xl">
         <SectionHeading
           title="Experience"

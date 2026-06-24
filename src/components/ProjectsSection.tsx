@@ -13,7 +13,10 @@ interface ProjectsSectionProps {
 export function ProjectsSection({ projects }: ProjectsSectionProps) {
   if (projects.length === 0) {
     return (
-      <section id="projects" className="py-24 px-4 sm:px-6 lg:px-8 bg-surface/50">
+      <section
+        id="projects"
+        className="scroll-mt-28 py-24 px-4 sm:px-6 lg:px-8 bg-surface/50"
+      >
         <div className="mx-auto max-w-6xl">
           <SectionHeading
             title="Projects"
@@ -26,7 +29,10 @@ export function ProjectsSection({ projects }: ProjectsSectionProps) {
   }
 
   return (
-    <section id="projects" className="py-24 px-4 sm:px-6 lg:px-8 bg-surface/50">
+    <section
+      id="projects"
+      className="scroll-mt-28 py-24 px-4 sm:px-6 lg:px-8 bg-surface/50"
+    >
       <div className="mx-auto max-w-6xl">
         <SectionHeading
           title="Projects"

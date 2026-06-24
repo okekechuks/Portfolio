@@ -32,7 +32,7 @@ export function SkillsSection({ skills }: SkillsSectionProps) {
 
   if (skills.length === 0) {
     return (
-      <section id="skills" className="py-24 px-4 sm:px-6 lg:px-8">
+      <section id="skills" className="scroll-mt-28 py-24 px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-6xl">
           <SectionHeading
             title="Skills"
@@ -45,7 +45,7 @@ export function SkillsSection({ skills }: SkillsSectionProps) {
   }
 
   return (
-    <section id="skills" className="py-24 px-4 sm:px-6 lg:px-8">
+    <section id="skills" className="scroll-mt-28 py-24 px-4 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl">
         <SectionHeading
           title="Skills"

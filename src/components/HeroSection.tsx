@@ -19,7 +19,10 @@ export function HeroSection({ settings }: HeroSectionProps) {
   };
 
   return (
-    <section className="relative min-h-screen flex items-center px-4 sm:px-6 lg:px-8 pt-20">
+    <section
+      id="home"
+      className="relative min-h-screen flex items-center px-4 sm:px-6 lg:px-8 pt-20 scroll-mt-28"
+    >
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--accent)_0%,_transparent_50%)] opacity-10" />
 
       <div className="relative mx-auto max-w-6xl w-full grid gap-12 lg:grid-cols-2 lg:items-center">
