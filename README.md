@@ -223,7 +223,7 @@ The architecture separates UI components from business logic to make future back
 ## Clone the repository
 
 ```bash
-git clone <repository-url>
+git clone <https://github.com/okekechuks/Portfolio.git>
 ```
 
 ## Install dependencies
