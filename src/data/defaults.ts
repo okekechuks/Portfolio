@@ -71,7 +71,14 @@ const MASTER_SKILLS: Record<SkillCategory, string[]> = {
 };
 
 function createSkillId(category: string, name: string): string {
-  return `${category.toLowerCase()}-${name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
+  const normalizedName = name
+    .toLowerCase()
+    .replace(/#/g, "sharp")
+    .replace(/\+/g, "plus")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+
+  return `${category.toLowerCase()}-${normalizedName}`;
 }
 
 export function getDefaultSkills(): Skill[] {

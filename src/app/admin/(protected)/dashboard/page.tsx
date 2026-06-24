@@ -20,19 +20,26 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const loadStats = async () => {
-      const [allSkills, allProjects, allExperience] = await Promise.all([
-        skillsService.getAll(),
+      const [skillsStatus, allProjects, allExperience] = await Promise.allSettled([
+        skillsService.getStatus(),
         projectService.getAll(),
         experienceService.getAll(),
       ]);
 
+      const status =
+        skillsStatus.status === "fulfilled" ? skillsStatus.value : null;
+      const projects =
+        allProjects.status === "fulfilled" ? allProjects.value : [];
+      const experience =
+        allExperience.status === "fulfilled" ? allExperience.value : [];
+
       setStats({
-        enabledSkills: allSkills.filter((s) => s.enabled).length,
-        totalSkills: allSkills.length,
-        enabledProjects: allProjects.filter((p) => p.enabled).length,
-        totalProjects: allProjects.length,
-        enabledExperience: allExperience.filter((e) => e.enabled).length,
-        totalExperience: allExperience.length,
+        enabledSkills: status?.enabled ?? 0,
+        totalSkills: status?.total ?? 0,
+        enabledProjects: projects.filter((p) => p.enabled).length,
+        totalProjects: projects.length,
+        enabledExperience: experience.filter((e) => e.enabled).length,
+        totalExperience: experience.length,
       });
     };
 
