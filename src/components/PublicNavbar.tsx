@@ -12,12 +12,12 @@ const NAV_ITEMS = [
 
 export function PublicNavbar() {
   return (
-    <header className="sticky top-0 z-40 border-b border-border/70 bg-background/85 backdrop-blur-md supports-[backdrop-filter]:bg-background/70">
+    <header className="absolute inset-x-0 top-4 z-40 px-4 sm:px-6 lg:px-8">
       <nav
         aria-label="Primary"
-        className="mx-auto flex h-16 max-w-6xl items-center justify-center px-4 sm:px-6 lg:px-8"
+        className="mx-auto flex w-fit max-w-full items-center justify-center rounded-full border border-border/70 bg-background/80 px-3 py-2 backdrop-blur-md supports-[backdrop-filter]:bg-background/70"
       >
-        <div className="flex w-full flex-wrap items-center justify-start gap-2 text-sm sm:justify-center sm:gap-3">
+        <div className="flex flex-wrap items-center justify-center gap-1 text-sm sm:gap-2">
           {NAV_ITEMS.map((item) => (
             <a
               key={item.href}
