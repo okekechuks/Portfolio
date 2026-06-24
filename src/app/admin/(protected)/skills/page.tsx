@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { AdminNavbar } from "@/components/admin/AdminNavbar";
 import { Badge } from "@/components/ui/Badge";
-import { skillsService } from "@/services/skillsService";
+import { skillsService, type SkillsStatus } from "@/services/skillsService";
 import { getDefaultSkills } from "@/data/defaults";
 import type { Skill, SkillCategory, Proficiency } from "@/types";
 import { cn } from "@/utils/cn";
@@ -25,18 +25,33 @@ export default function SkillsAdminPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
+  const [status, setStatus] = useState<SkillsStatus | null>(null);
 
   const loadSkills = async () => {
     try {
       const data = await skillsService.getAll();
-      const resolvedSkills = data.length > 0 ? data : getDefaultSkills();
-
-      setSkills(resolvedSkills);
-      setSavedSkills(resolvedSkills);
+      const currentStatus = await skillsService.getStatus();
 
       if (data.length === 0) {
-        await skillsService.updateSkills(resolvedSkills);
+        const defaultSkills = getDefaultSkills();
+        setSkills(defaultSkills);
+        setSavedSkills([]);
+        const saved = await skillsService.updateSkills(defaultSkills);
+        setSkills(saved);
+        setSavedSkills(saved);
+        setStatus(await skillsService.getStatus());
+        return;
       }
+
+      setSkills(data);
+      setSavedSkills(data);
+      setStatus(currentStatus);
+      setSaveError(null);
+    } catch {
+      setSkills([]);
+      setSavedSkills([]);
+      setStatus(null);
+      setSaveError("Unable to load skills from the database. Check your Vercel Supabase environment variables.");
     } finally {
       setIsLoading(false);
     }
@@ -162,6 +177,14 @@ export default function SkillsAdminPage() {
         ))}
 
         <div className="sticky bottom-0 mt-6 border-t border-zinc-800 bg-zinc-950/95 pt-4">
+          {status && (
+            <div className="mb-3 rounded-lg border border-zinc-800 bg-zinc-900/70 px-3 py-2 text-xs text-zinc-400">
+              <span className="font-medium text-zinc-300">Live DB status:</span>{" "}
+              {status.configured
+                ? `${status.enabled} enabled / ${status.total} total skills`
+                : "Supabase is not configured on this deployment"}
+            </div>
+          )}
           <button
             type="button"
             onClick={applyChanges}

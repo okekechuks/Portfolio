@@ -7,15 +7,13 @@ import { mapSkill } from "@/lib/db/mappers";
 import { getDefaultSkills } from "@/data/defaults";
 import type { Skill } from "@/types";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export async function GET(request: NextRequest) {
   try {
     const all = request.nextUrl.searchParams.get("all") === "true";
-    let includeAll = false;
-
-    if (all) {
-      const auth = await requireAuth();
-      includeAll = auth.authed;
-    }
+    const includeAll = all;
 
     if (isSupabaseConfigured()) {
       await seedDatabaseIfEmpty();
