@@ -10,9 +10,10 @@ import { getSupabaseAdmin } from "@/lib/supabase/server";
 export async function seedDatabaseIfEmpty(): Promise<void> {
   const supabase = getSupabaseAdmin();
 
-  const { count: skillsCount } = await supabase
+  const { count: skillsCount, error: skillsCountError } = await supabase
     .from("skills")
     .select("*", { count: "exact", head: true });
+  if (skillsCountError) throw skillsCountError;
 
   if (skillsCount === 0) {
     const skills = getDefaultSkills().map((s) => ({
@@ -23,12 +24,14 @@ export async function seedDatabaseIfEmpty(): Promise<void> {
       learning: s.learning,
       proficiency: s.proficiency,
     }));
-    await supabase.from("skills").insert(skills);
+    const { error } = await supabase.from("skills").insert(skills);
+    if (error) throw error;
   }
 
-  const { count: projectsCount } = await supabase
+  const { count: projectsCount, error: projectsCountError } = await supabase
     .from("projects")
     .select("*", { count: "exact", head: true });
+  if (projectsCountError) throw projectsCountError;
 
   if (projectsCount === 0) {
     const projects = defaultProjects.map((p) => ({
@@ -43,12 +46,14 @@ export async function seedDatabaseIfEmpty(): Promise<void> {
       enabled: p.enabled,
       sort_order: p.order,
     }));
-    await supabase.from("projects").insert(projects);
+    const { error } = await supabase.from("projects").insert(projects);
+    if (error) throw error;
   }
 
-  const { count: experienceCount } = await supabase
+  const { count: experienceCount, error: experienceCountError } = await supabase
     .from("experience")
     .select("*", { count: "exact", head: true });
+  if (experienceCountError) throw experienceCountError;
 
   if (experienceCount === 0) {
     const items = defaultExperience.map((e) => ({
@@ -61,12 +66,14 @@ export async function seedDatabaseIfEmpty(): Promise<void> {
       enabled: e.enabled,
       sort_order: e.order,
     }));
-    await supabase.from("experience").insert(items);
+    const { error } = await supabase.from("experience").insert(items);
+    if (error) throw error;
   }
 
-  const { count: socialsCount } = await supabase
+  const { count: socialsCount, error: socialsCountError } = await supabase
     .from("socials")
     .select("*", { count: "exact", head: true });
+  if (socialsCountError) throw socialsCountError;
 
   if (socialsCount === 0) {
     const socials = defaultSocials.map((s) => ({
@@ -76,17 +83,19 @@ export async function seedDatabaseIfEmpty(): Promise<void> {
       url: s.url,
       enabled: s.enabled,
     }));
-    await supabase.from("socials").insert(socials);
+    const { error } = await supabase.from("socials").insert(socials);
+    if (error) throw error;
   }
 
-  const { data: settingsRow } = await supabase
+  const { data: settingsRow, error: settingsError } = await supabase
     .from("site_settings")
     .select("id")
     .eq("id", "site")
     .maybeSingle();
+  if (settingsError) throw settingsError;
 
   if (!settingsRow) {
-    await supabase.from("site_settings").insert({
+    const { error } = await supabase.from("site_settings").insert({
       id: "site",
       name: defaultSiteSettings.name,
       title: defaultSiteSettings.title,
@@ -98,6 +107,7 @@ export async function seedDatabaseIfEmpty(): Promise<void> {
       admin_password: process.env.ADMIN_PASSWORD ?? "",
       admin_phone: process.env.ADMIN_PHONE ?? "",
     });
+    if (error) throw error;
   }
 }
 

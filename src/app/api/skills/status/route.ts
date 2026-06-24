@@ -3,9 +3,20 @@ import { requireAuth } from "@/lib/api/requireAuth";
 import { isSupabaseConfigured, getSupabaseAdmin } from "@/lib/supabase/server";
 import { seedDatabaseIfEmpty } from "@/lib/db/seed";
 import { mapSkill } from "@/lib/db/mappers";
+import { getDefaultSkills } from "@/data/defaults";
+import type { Skill } from "@/types";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
+
+function mergeWithDefaultSkills(rows: Record<string, unknown>[]): Skill[] {
+  const savedById = new Map(rows.map((row) => [row.id as string, mapSkill(row)]));
+
+  return getDefaultSkills().map((defaultSkill) => ({
+    ...defaultSkill,
+    ...savedById.get(defaultSkill.id),
+  }));
+}
 
 export async function GET() {
   const auth = await requireAuth();
@@ -32,7 +43,7 @@ export async function GET() {
 
     if (error) throw error;
 
-    const skills = (data ?? []).map(mapSkill);
+    const skills = mergeWithDefaultSkills(data ?? []);
     const enabledSkills = skills.filter((skill) => skill.enabled);
 
     return jsonOk({

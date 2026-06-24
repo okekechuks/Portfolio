@@ -10,6 +10,15 @@ import type { Skill } from "@/types";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
+function mergeWithDefaultSkills(rows: Record<string, unknown>[]): Skill[] {
+  const savedById = new Map(rows.map((row) => [row.id as string, mapSkill(row)]));
+
+  return getDefaultSkills().map((defaultSkill) => ({
+    ...defaultSkill,
+    ...savedById.get(defaultSkill.id),
+  }));
+}
+
 export async function GET(request: NextRequest) {
   try {
     const all = request.nextUrl.searchParams.get("all") === "true";
@@ -25,7 +34,7 @@ export async function GET(request: NextRequest) {
         .order("name");
       if (error) throw error;
 
-      const skills = (data ?? []).map(mapSkill);
+      const skills = mergeWithDefaultSkills(data ?? []);
       return jsonOk(includeAll ? skills : skills.filter((skill) => skill.enabled));
     }
 
@@ -60,7 +69,7 @@ export async function PUT(request: NextRequest) {
         .select("*");
 
       if (error) throw error;
-      return jsonOk((data ?? []).map(mapSkill));
+      return jsonOk(mergeWithDefaultSkills(data ?? []));
     }
 
     return jsonError("Database not configured", 503);
